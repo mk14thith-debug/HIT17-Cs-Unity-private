@@ -72,9 +72,13 @@ Con song: True
 
 ### Yêu cầu
 
-Nhập số địch đã hạ `enemyCount` và tổng thời gian chơi `totalSeconds`. Mỗi địch được 150 điểm, lưu bằng `const int PointsPerEnemy = 150;`.
+Nhập số địch đã hạ `enemyCount` và tổng thời gian đã chơi `totalSeconds` (tính bằng giây). Mỗi địch được 150 điểm, lưu bằng `const int PointsPerEnemy = 150;`.
 
-Tính tổng điểm, số phút và giây còn lại, số địch hạ trung bình mỗi phút. Công thức trung bình: `enemyCount * 60.0 / totalSeconds`; in 2 chữ số sau dấu thập phân.
+Tính và in ra:
+
+- Tổng điểm đạt được.
+- Tổng thời gian đã chơi dưới dạng số phút và số giây lẻ. Ví dụ: `125` giây được hiển thị thành `2 phút 5 giây`; phần giây lẻ là phần dư sau khi đổi sang phút.
+- Số địch hạ trung bình mỗi phút, tính theo công thức `enemyCount * 60.0 / totalSeconds`; in 2 chữ số sau dấu thập phân.
 
 ### Ràng buộc
 
