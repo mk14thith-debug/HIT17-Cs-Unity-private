@@ -458,90 +458,165 @@ Trong đó:
 - `int` là kiểu của giá trị.
 - Mỗi khóa là duy nhất.
 
-### 4.2. Thêm và cập nhật
+### 4.2. Ví dụ các thao tác và kết quả
+
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
+
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — Add, bộ chỉ mục và Count
 
 ```csharp
+Dictionary<string, int> inventory = new Dictionary<string, int>();
 inventory.Add("ammo", 10);
-inventory.Add("shield", 2);
-
-inventory["potion"] = 5;
+inventory["shield"] = 2;
 inventory["ammo"] = 20;
+Console.WriteLine(inventory["ammo"]);
+Console.WriteLine(inventory["shield"]);
+Console.WriteLine(inventory.Count);
 ```
 
-Phân biệt:
+**Kết quả:**
 
-- `Add(key, value)`: thêm mới; trùng khóa sẽ gây lỗi.
-- `dictionary[key] = value`: thêm nếu chưa có, cập nhật nếu đã có.
-
-### 4.3. Đọc giá trị
-
-Nếu chắc chắn khóa tồn tại:
-
-```csharp
-Console.WriteLine(inventory["ammo"]); // 20
+```text
+20
+2
+2
 ```
 
-Đọc bằng khóa không tồn tại sẽ gây lỗi.
+Add trả void, chỉ thêm khóa mới; trùng khóa gây ArgumentException. Gán qua [key] thêm nếu chưa có, cập nhật nếu đã có. Đọc qua [key] cần khóa tồn tại, nếu không sẽ có KeyNotFoundException. Count là số cặp khóa–giá trị, không phải tổng số vật phẩm.
 
-### 4.4. ContainsKey — kiểm tra khóa
+#### Ví dụ 2 — ContainsKey — kiểm tra khóa
 
 ```csharp
-if (inventory.ContainsKey("shield"))
+Dictionary<string, int> inventory = new Dictionary<string, int>
 {
-    Console.WriteLine(inventory["shield"]);
+    { "ammo", 10 }, { "shield", 2 }
+};
+Console.WriteLine(inventory.ContainsKey("ammo"));
+Console.WriteLine(inventory.ContainsKey("laser"));
+Console.WriteLine(inventory.ContainsKey("Ammo"));
+```
+
+**Kết quả:**
+
+```text
+True
+False
+False
+```
+
+ContainsKey trả bool, không sửa dữ liệu. Các khóa string trong ví dụ phân biệt chữ hoa/thường.
+
+#### Ví dụ 3 — TryGetValue — tìm khóa và lấy giá trị
+
+```csharp
+Dictionary<string, int> inventory = new Dictionary<string, int>
+{
+    { "ammo", 10 }, { "shield", 0 }
+};
+bool foundAmmo = inventory.TryGetValue("ammo", out int ammo);
+bool foundLaser = inventory.TryGetValue("laser", out int laser);
+bool foundShield = inventory.TryGetValue("shield", out int shield);
+Console.WriteLine($"ammo: {foundAmmo}, {ammo}");
+Console.WriteLine($"laser: {foundLaser}, {laser}");
+Console.WriteLine($"shield: {foundShield}, {shield}");
+```
+
+**Kết quả:**
+
+```text
+ammo: True, 10
+laser: False, 0
+shield: True, 0
+```
+
+TryGetValue trả bool và đưa giá trị vào biến out. Nếu không tìm thấy, out nhận giá trị mặc định của TValue, với int là 0. Shield có thật và số lượng bằng 0; laser không có nhưng cũng nhận 0. Vì vậy cần đọc bool để phân biệt. out sẽ học kỹ ở buổi 4.
+
+#### Ví dụ 4 — Remove — xóa theo khóa
+
+```csharp
+Dictionary<string, int> inventory = new Dictionary<string, int>
+{
+    { "ammo", 10 }, { "shield", 2 }
+};
+Console.WriteLine(inventory.Remove("shield"));
+Console.WriteLine(inventory.Remove("laser"));
+Console.WriteLine(inventory.ContainsKey("shield"));
+Console.WriteLine(inventory.Count);
+```
+
+**Kết quả:**
+
+```text
+True
+False
+False
+1
+```
+
+Remove(key) trả true nếu tìm thấy và xóa cặp tương ứng, false nếu không có khóa. Xóa khóa đồng thời xóa giá trị đi kèm.
+
+#### Ví dụ 5 — foreach — đọc Key và Value
+
+```csharp
+Dictionary<string, int> inventory = new Dictionary<string, int>
+{
+    { "ammo", 10 }, { "shield", 2 }
+};
+int total = 0;
+foreach (var entry in inventory)
+{
+    total += entry.Value;
 }
-else
+Console.WriteLine($"Tong so luong: {total}");
+string[] displayOrder = { "ammo", "shield" };
+foreach (string key in displayOrder)
 {
-    Console.WriteLine("Khong co shield.");
+    Console.WriteLine($"{key}: {inventory[key]}");
 }
 ```
 
-### 4.5. TryGetValue — tra cứu có kiểm tra
+**Kết quả:**
 
-```csharp
-if (inventory.TryGetValue("ammo", out int quantity))
-{
-    Console.WriteLine($"So luong dan: {quantity}");
-}
-else
-{
-    Console.WriteLine("Khong co ammo.");
-}
+```text
+Tong so luong: 12
+ammo: 10
+shield: 2
 ```
 
-- Trả về `true` khi tìm thấy khóa.
-- `quantity` nhận giá trị tương ứng.
-- Nếu không tìm thấy, trả về `false`; với ví dụ này, `quantity` nhận 0.
+Khi duyệt Dictionary, entry.Key là khóa, entry.Value là giá trị. Ví dụ cộng các Value nên không phụ thuộc thứ tự duyệt. Muốn thứ tự in xác định, dùng mảng khóa như displayOrder; không dựa vào thứ tự duyệt Dictionary để biểu diễn thứ hạng.
 
-`out` là cách nhận kết quả từ phương thức; sẽ học kỹ hơn ở Buổi 4.
-
-### 4.6. Xóa và duyệt
+#### Ví dụ 6 — Clear — xóa toàn bộ cặp dữ liệu
 
 ```csharp
-inventory.Remove("shield");
-
-foreach (var item in inventory)
+Dictionary<string, int> inventory = new Dictionary<string, int>
 {
-    Console.WriteLine($"{item.Key}: {item.Value}");
-}
+    { "ammo", 10 }, { "shield", 2 }
+};
+inventory.Clear();
+Console.WriteLine(inventory.Count);
+Console.WriteLine(inventory.ContainsKey("ammo"));
+inventory.Add("potion", 3);
+Console.WriteLine(inventory["potion"]);
 ```
 
-Trong vòng lặp:
+**Kết quả:**
 
-- `item.Key`: khóa.
-- `item.Value`: giá trị.
+```text
+0
+False
+3
+```
 
-Không dựa vào thứ tự duyệt Dictionary để biểu diễn thứ hạng hoặc thứ tự người đến.
+Clear trả void. Dictionary trở thành rỗng nhưng vẫn có thể thêm dữ liệu mới.
 
-### 4.7. Ví dụ đếm số lượng vật phẩm
+#### Ví dụ 7 — Đếm số lần xuất hiện bằng Dictionary
 
 ```csharp
-string[] collectedItems = { "ammo", "shield", "ammo" };
-
-Dictionary<string, int> counts =
-    new Dictionary<string, int>();
-
-foreach (string item in collectedItems)
+string[] drops = { "ammo", "shield", "ammo" };
+Dictionary<string, int> counts = new Dictionary<string, int>();
+foreach (string item in drops)
 {
     if (counts.ContainsKey(item))
     {
@@ -552,10 +627,20 @@ foreach (string item in collectedItems)
         counts.Add(item, 1);
     }
 }
-
-Console.WriteLine(counts["ammo"]);   // 2
-Console.WriteLine(counts["shield"]); // 1
+Console.WriteLine($"ammo: {counts["ammo"]}");
+Console.WriteLine($"shield: {counts["shield"]}");
+Console.WriteLine($"So loai: {counts.Count}");
 ```
+
+**Kết quả:**
+
+```text
+ammo: 2
+shield: 1
+So loai: 2
+```
+
+Đã gặp khóa thì tăng số lượng; chưa có thì thêm với số lượng 1. Ba lượt nhặt tạo hai khóa, tương ứng hai loại. Đây là demo của người dạy; phần thực hành giữ nguyên.
 
 **Thực hành nhanh:** Thêm `"potion"` và một lượt `"shield"` vào dữ liệu trên, sau đó kiểm tra số lượng từng loại.
 
@@ -563,123 +648,275 @@ Console.WriteLine(counts["shield"]); // 1
 
 ## 5. Stack<T> và Queue<T>
 
-### 5.1. Stack — vào sau, ra trước
+### 5.1. Stack — vào sau, ra trước (LIFO)
 
-Có thể hình dung Stack như chồng đĩa: đĩa đặt lên sau được lấy ra trước.
+Stack giống chồng đĩa: đặt sau lấy trước.
 
-Các thao tác chính:
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
 
-- `Push`: thêm vào đỉnh.
-- `Pop`: lấy và xóa phần tử ở đỉnh.
-- `Peek`: xem phần tử ở đỉnh, không xóa.
-- `Count`: số phần tử.
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — Push và Count — thêm vào đỉnh
 
 ```csharp
 Stack<string> history = new Stack<string>();
-
 history.Push("Di chuyen");
 history.Push("Ban");
-
-Console.WriteLine(history.Peek()); // Ban
-Console.WriteLine(history.Pop());  // Ban
-Console.WriteLine(history.Pop());  // Di chuyen
+Console.WriteLine(history.Count);
+Console.WriteLine(history.Peek());
 ```
 
-**Ứng dụng:** Lưu lịch sử thao tác để thực hiện undo.
+**Kết quả:**
 
-### 5.2. Queue — vào trước, ra trước
-
-Queue giống hàng người chờ mua vé: ai đến trước được phục vụ trước.
-
-Các thao tác chính:
-
-- `Enqueue`: thêm vào cuối hàng.
-- `Dequeue`: lấy và xóa phần tử đầu hàng.
-- `Peek`: xem phần tử đầu hàng, không xóa.
-- `Count`: số phần tử.
-
-```csharp
-Queue<string> waitingPlayers = new Queue<string>();
-
-waitingPlayers.Enqueue("An");
-waitingPlayers.Enqueue("Binh");
-
-Console.WriteLine(waitingPlayers.Dequeue()); // An
-Console.WriteLine(waitingPlayers.Dequeue()); // Binh
+```text
+2
+Ban
 ```
 
-**Ứng dụng:** Hàng chờ ghép trận, các yêu cầu cần xử lý theo thứ tự.
+Push trả void, thêm vào đỉnh. Phần tử thêm sau cùng là Ban nên nằm ở đỉnh. Count là thuộc tính số phần tử.
 
-### 5.3. Kiểm tra trước khi lấy
-
-`Pop`, `Dequeue` và `Peek` gây lỗi khi collection rỗng.
+#### Ví dụ 2 — Peek và Pop — xem khác với lấy ra
 
 ```csharp
-if (waitingPlayers.Count > 0)
+Stack<string> history = new Stack<string>();
+history.Push("Di chuyen");
+history.Push("Ban");
+Console.WriteLine(history.Peek());
+Console.WriteLine(history.Count);
+Console.WriteLine(history.Pop());
+Console.WriteLine(history.Count);
+Console.WriteLine(history.Pop());
+Console.WriteLine(history.Count);
+```
+
+**Kết quả:**
+
+```text
+Ban
+2
+Ban
+1
+Di chuyen
+0
+```
+
+Peek trả phần tử ở đỉnh nhưng không xóa. Pop trả phần tử ở đỉnh và xóa nó. Thứ tự lấy là vào sau, ra trước (LIFO). Stack có thể lưu lịch sử, còn hành vi undo phải lập trình thêm.
+
+#### Ví dụ 3 — Contains, Clear và kiểm tra rỗng
+
+```csharp
+Stack<string> history = new Stack<string>();
+history.Push("Ban");
+Console.WriteLine(history.Contains("Ban"));
+Console.WriteLine(history.Contains("Nhay"));
+history.Clear();
+Console.WriteLine(history.Count);
+if (history.Count > 0)
 {
-    Console.WriteLine(waitingPlayers.Dequeue());
+    Console.WriteLine(history.Pop());
 }
 else
 {
-    Console.WriteLine("Hang cho rong.");
+    Console.WriteLine("Lich su rong");
 }
 ```
 
-| Cấu trúc | Quy tắc | Ví dụ |
-|---|---|---|
-| Stack | Vào sau, ra trước — LIFO | Undo thao tác gần nhất |
-| Queue | Vào trước, ra trước — FIFO | Phục vụ người đến trước |
+**Kết quả:**
+
+```text
+True
+False
+0
+Lich su rong
+```
+
+Contains trả bool, Clear trả void. Pop/Peek khi rỗng gây InvalidOperationException; kiểm tra Count > 0 trước khi gọi nếu chưa biết có dữ liệu.
+
+### 5.2. Queue — vào trước, ra trước (FIFO)
+
+Queue giống hàng người chờ: đến trước được phục vụ trước.
+
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
+
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — Enqueue và Count — thêm vào cuối hàng
+
+```csharp
+Queue<string> waiting = new Queue<string>();
+waiting.Enqueue("An");
+waiting.Enqueue("Binh");
+Console.WriteLine(waiting.Count);
+Console.WriteLine(waiting.Peek());
+```
+
+**Kết quả:**
+
+```text
+2
+An
+```
+
+Enqueue trả void. An đến trước nên đứng đầu hàng; Count cho biết có hai phần tử.
+
+#### Ví dụ 2 — Peek và Dequeue — xem khác với phục vụ
+
+```csharp
+Queue<string> waiting = new Queue<string>();
+waiting.Enqueue("An");
+waiting.Enqueue("Binh");
+Console.WriteLine(waiting.Peek());
+Console.WriteLine(waiting.Count);
+Console.WriteLine(waiting.Dequeue());
+Console.WriteLine(waiting.Count);
+Console.WriteLine(waiting.Dequeue());
+Console.WriteLine(waiting.Count);
+```
+
+**Kết quả:**
+
+```text
+An
+2
+An
+1
+Binh
+0
+```
+
+Peek trả người đầu hàng nhưng không xóa; Dequeue trả người đầu hàng và xóa khỏi Queue. Thứ tự vào trước, ra trước (FIFO).
+
+#### Ví dụ 3 — Contains, Clear và kiểm tra hàng rỗng
+
+```csharp
+Queue<string> waiting = new Queue<string>();
+waiting.Enqueue("An");
+Console.WriteLine(waiting.Contains("An"));
+Console.WriteLine(waiting.Contains("Chi"));
+waiting.Clear();
+Console.WriteLine(waiting.Count);
+if (waiting.Count > 0)
+{
+    Console.WriteLine(waiting.Dequeue());
+}
+else
+{
+    Console.WriteLine("Hang cho rong");
+}
+```
+
+**Kết quả:**
+
+```text
+True
+False
+0
+Hang cho rong
+```
+
+Contains trả bool; Clear xóa toàn bộ và trả void. Dequeue/Peek khi rỗng gây InvalidOperationException.
+
+### 5.3. Bảng so sánh
+
+| Nhu cầu | Stack | Queue |
+| --- | --- | --- |
+| Thêm | Push, trả void | Enqueue, trả void |
+| Xem, không xóa | Peek, trả phần tử đỉnh | Peek, trả phần tử đầu hàng |
+| Lấy và xóa | Pop, trả phần tử đỉnh | Dequeue, trả phần tử đầu hàng |
+| Kiểm tra tồn tại | Contains, trả bool | Contains, trả bool |
+| Xóa hết | Clear, trả void | Clear, trả void |
+| Đếm | Count, thuộc tính int | Count, thuộc tính int |
 
 ---
 
 ## 6. HashSet<T> — tập hợp không trùng
 
-HashSet phù hợp khi cần lưu các giá trị duy nhất hoặc kiểm tra một giá trị đã tồn tại chưa.
+HashSet dùng để lưu giá trị duy nhất hoặc kiểm tra đã có mã hay chưa.
+
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
+
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — Add và Count — chỉ giữ giá trị duy nhất
 
 ```csharp
 HashSet<string> achievements = new HashSet<string>();
-
-bool firstAdd = achievements.Add("first_win");
-bool secondAdd = achievements.Add("first_win");
-
-Console.WriteLine(firstAdd);           // True
-Console.WriteLine(secondAdd);          // False
-Console.WriteLine(achievements.Count); // 1
+Console.WriteLine(achievements.Add("first_win"));
+Console.WriteLine(achievements.Add("first_win"));
+Console.WriteLine(achievements.Add("First_Win"));
+Console.WriteLine(achievements.Count);
 ```
 
-Thêm một giá trị đã có không tạo thêm phần tử.
+**Kết quả:**
 
-### Kiểm tra và xóa
+```text
+True
+False
+True
+2
+```
+
+Khác List.Add trả void, HashSet.Add trả bool: true nếu thêm mới, false nếu đã tồn tại. Chuỗi trong ví dụ phân biệt hoa/thường, nên first_win và First_Win là hai giá trị khác nhau.
+
+#### Ví dụ 2 — Contains và Remove
 
 ```csharp
-if (achievements.Contains("first_win"))
-{
-    Console.WriteLine("Da mo khoa thanh tuu.");
-}
-
-achievements.Remove("first_win");
+HashSet<string> achievements = new HashSet<string> { "first_win", "collector" };
+Console.WriteLine(achievements.Contains("first_win"));
+Console.WriteLine(achievements.Remove("first_win"));
+Console.WriteLine(achievements.Contains("first_win"));
+Console.WriteLine(achievements.Remove("first_win"));
+Console.WriteLine(achievements.Count);
 ```
 
-**Ghi nhớ:**
+**Kết quả:**
 
-- Không truy cập HashSet bằng chỉ số như `achievements[0]`.
-- Không dựa vào thứ tự duyệt của HashSet.
-- Với chuỗi, mặc định phân biệt hoa/thường.
-- Phù hợp cho danh sách mã thành tựu, mã vật phẩm đã khám phá hoặc kiểm tra trùng.
+```text
+True
+True
+False
+False
+1
+```
+
+Contains kiểm tra tồn tại; Remove xóa giá trị nếu có. Cả hai trả bool. Lần Remove thứ hai trả false vì mã đã bị xóa.
+
+#### Ví dụ 3 — foreach và Clear
+
+```csharp
+HashSet<string> achievements = new HashSet<string> { "first_win", "collector" };
+int visited = 0;
+foreach (string code in achievements)
+{
+    visited++;
+}
+Console.WriteLine($"So ma da duyet: {visited}");
+achievements.Clear();
+Console.WriteLine(achievements.Count);
+```
+
+**Kết quả:**
+
+```text
+So ma da duyet: 2
+0
+```
+
+HashSet duyệt được bằng foreach, nhưng không truy cập bằng [0] và không dựa vào thứ tự duyệt. Ví dụ chỉ đếm lượt để kết quả không phụ thuộc thứ tự. Clear trả void.
 
 ---
 
 ## 7. Enum — đặt tên cho trạng thái
 
-Thay vì dùng những số khó nhớ:
+Enum tạo một kiểu có các hằng được đặt tên, giúp đọc logic trạng thái dễ hơn các số rời rạc.
 
-```csharp
-int gameState = 1;
-```
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
 
-Có thể đặt tên rõ ràng cho các trạng thái bằng enum.
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
 
-Đặt khai báo sau **ngoài `Main`**, chẳng hạn phía trên class `Program`:
+#### Ví dụ 1 — Gán, so sánh và in enum
+
+**Khai báo ngoài Main:**
 
 ```csharp
 enum GameState
@@ -691,51 +928,84 @@ enum GameState
 }
 ```
 
-Sử dụng bên trong `Main`:
+**Đặt trong Main:**
 
 ```csharp
 GameState state = GameState.Playing;
+Console.WriteLine(state);
+Console.WriteLine(state == GameState.Playing);
+state = GameState.Paused;
+Console.WriteLine(state);
+Console.WriteLine((int)state);
+```
 
-if (state == GameState.Playing)
+**Kết quả:**
+
+```text
+Playing
+True
+Paused
+2
+```
+
+Các thành viên không gán số riêng bắt đầu từ 0 và tăng dần: Menu = 0, Playing = 1, Paused = 2, GameOver = 3. Ép sang int ở dòng cuối để quan sát mã số; khi viết logic nên dùng tên trạng thái.
+
+#### Ví dụ 2 — switch — chọn hành vi theo trạng thái
+
+**Khai báo ngoài Main:**
+
+```csharp
+enum GameState
 {
-    Console.WriteLine("Dang choi.");
+    Menu,
+    Playing,
+    Paused,
+    GameOver
 }
 ```
 
-Có thể kết hợp với `switch`:
+**Đặt trong Main:**
 
 ```csharp
+GameState state = GameState.GameOver;
 switch (state)
 {
     case GameState.Menu:
-        Console.WriteLine("Man hinh chinh.");
+        Console.WriteLine("Man hinh chinh");
         break;
-
     case GameState.Playing:
-        Console.WriteLine("Dang choi.");
+        Console.WriteLine("Dang choi");
         break;
-
     case GameState.Paused:
-        Console.WriteLine("Tam dung.");
+        Console.WriteLine("Tam dung");
         break;
-
     case GameState.GameOver:
-        Console.WriteLine("Ket thuc.");
+        Console.WriteLine("Ket thuc tran");
         break;
 }
 ```
 
-Enum giúp tên trạng thái dễ đọc và hạn chế việc dùng nhầm các mã số.
+**Kết quả:**
+
+```text
+Ket thuc tran
+```
+
+Chỉ nhánh khớp trạng thái hiện tại được chạy. Enum đặt tên cho lựa chọn; việc dừng hoặc kết thúc game vẫn cần code xử lý.
 
 ---
 
 ## 8. Struct và class — giới thiệu hành vi sao chép
 
-Buổi này chỉ cần quan sát sự khác nhau khi gán sang biến khác. Cách thiết kế class sẽ học ở Buổi 4.
+Buổi này quan sát hành vi gán; cách thiết kế class sẽ học ở buổi 4.
 
-### 8.1. Struct: sao chép giá trị
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
 
-Đặt khai báo ngoài `Main`:
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — Struct — gán tạo bản sao giá trị
+
+**Khai báo ngoài Main:**
 
 ```csharp
 struct GridPosition
@@ -745,25 +1015,30 @@ struct GridPosition
 }
 ```
 
-Sử dụng trong `Main`:
+**Đặt trong Main:**
 
 ```csharp
 GridPosition first = new GridPosition();
 first.X = 2;
 first.Y = 3;
-
 GridPosition second = first;
 second.X = 99;
-
-Console.WriteLine(first.X);  // 2
-Console.WriteLine(second.X); // 99
+Console.WriteLine($"First: ({first.X}, {first.Y})");
+Console.WriteLine($"Second: ({second.X}, {second.Y})");
 ```
 
-`second = first` sao chép giá trị của struct. Đổi `second.X` không làm `first.X` thay đổi.
+**Kết quả:**
 
-### 8.2. Class: sao chép tham chiếu
+```text
+First: (2, 3)
+Second: (99, 3)
+```
 
-Đặt khai báo ngoài `Main`:
+Với struct chứa hai field int ở đây, second nhận bản sao giá trị nên sửa second.X không đổi first.X. Nếu struct chứa field kiểu tham chiếu, phép gán không tự sao chép sâu đối tượng ở field đó.
+
+#### Ví dụ 2 — Class — gán sao chép tham chiếu
+
+**Khai báo ngoài Main:**
 
 ```csharp
 class PlayerData
@@ -772,52 +1047,93 @@ class PlayerData
 }
 ```
 
-Sử dụng trong `Main`:
+**Đặt trong Main:**
 
 ```csharp
 PlayerData first = new PlayerData();
 first.Hp = 100;
-
 PlayerData second = first;
 second.Hp = 50;
-
-Console.WriteLine(first.Hp);  // 50
-Console.WriteLine(second.Hp); // 50
+Console.WriteLine($"First HP: {first.Hp}");
+Console.WriteLine($"Second HP: {second.Hp}");
 ```
 
-Hai biến cùng tham chiếu đến một đối tượng. Sửa HP qua `second` thì đọc qua `first` cũng thấy giá trị mới.
+**Kết quả:**
+
+```text
+First HP: 50
+Second HP: 50
+```
+
+Hai biến giữ tham chiếu tới cùng đối tượng PlayerData. Phép gán second = first không gọi new và không tạo đối tượng độc lập.
+
+#### Ví dụ 3 — Class — hai lần new tạo hai đối tượng
+
+**Khai báo ngoài Main:**
+
+```csharp
+class PlayerData
+{
+    public int Hp;
+}
+```
+
+**Đặt trong Main:**
+
+```csharp
+PlayerData first = new PlayerData();
+first.Hp = 100;
+PlayerData second = new PlayerData();
+second.Hp = first.Hp;
+second.Hp = 50;
+Console.WriteLine($"First HP: {first.Hp}");
+Console.WriteLine($"Second HP: {second.Hp}");
+```
+
+**Kết quả:**
+
+```text
+First HP: 100
+Second HP: 50
+```
+
+Hai lần new tạo hai đối tượng riêng. Ví dụ sao chép giá trị field int sang đối tượng mới, không phải cơ chế tự sao chép sâu mọi class. Các field public chỉ phục vụ quan sát; buổi 4 học đóng gói.
 
 | Struct | Class |
-|---|---|
-| Là kiểu giá trị | Là kiểu tham chiếu |
-| Phép gán sao chép giá trị | Phép gán sao chép tham chiếu |
-| Thường dùng cho dữ liệu mang ý nghĩa một giá trị, như tọa độ | Thường dùng cho đối tượng có danh tính và trạng thái, như người chơi |
+| --- | --- |
+| Kiểu giá trị | Kiểu tham chiếu |
+| Gán sao chép giá trị | Gán sao chép tham chiếu |
+| Ví dụ: tọa độ dạng giá trị | Ví dụ: người chơi có trạng thái |
 
-Không nên ghi nhớ bằng quy tắc “struct luôn nằm trên stack, class luôn nằm trên heap”. Điều cần nắm ở đây là **hành vi sao chép**.
-
-Các ví dụ dùng field `public` để dễ quan sát. Buổi 4 sẽ học cách bảo vệ dữ liệu bằng field private và property.
+Không ghi nhớ bằng quy tắc “struct luôn trên stack, class luôn trên heap”; tập trung vào hành vi sao chép.
 
 ---
 
 ## 9. #region — thu gọn code trong IDE
 
+Mỗi ví dụ bên dưới **chạy độc lập** trong Main của project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép các ví dụ nguyên trạng vào cùng Main vì có thể trùng tên biến. Khi có khai báo enum/struct/class, đặt khai báo đó **ngoài Main**, cùng cấp với class Program.
+
+Các hàm không tự in ra màn hình; kết quả dưới mỗi ví dụ do Console.WriteLine in giá trị trả về hoặc trạng thái sau thao tác. Count là thuộc tính, không viết Count().
+
+#### Ví dụ 1 — #region chỉ nhóm phần hiển thị trong IDE
+
 ```csharp
 #region Inventory
-
-// Các phương thức quản lý kho vật phẩm.
-
+int ammo = 10;
+Console.WriteLine($"Trong region: {ammo}");
 #endregion
+ammo += 5;
+Console.WriteLine($"Sau region: {ammo}");
 ```
 
-`#region` giúp nhóm và thu gọn một phần code trong IDE.
+**Kết quả:**
 
-Nó không:
+```text
+Trong region: 10
+Sau region: 15
+```
 
-- Tạo phạm vi biến mới.
-- Thay đổi cách chương trình chạy.
-- Thay thế việc chia hàm hoặc chia class.
-
-Chỉ dùng khi giúp tìm nội dung trong file dễ hơn.
+#region/#endregion cho phép thu gọn code trong IDE; không tạo phạm vi biến mới. ammo vẫn dùng được sau #endregion. Thu gọn hoặc mở vùng không thay đổi kết quả chạy; region không thay thế việc chia hàm/class.
 
 ---
 
