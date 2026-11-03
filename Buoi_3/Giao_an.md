@@ -1306,92 +1306,102 @@ Sau region: 15
 
 #region/#endregion cho phép thu gọn code trong IDE; không tạo phạm vi biến mới. ammo vẫn dùng được sau #endregion. Thu gọn hoặc mở vùng không thay đổi kết quả chạy; region không thay thế việc chia hàm/class.
 
-### 75–87 — Thực hành tổng hợp: thống kê vật phẩm
+### 75–87 — Thực hành tổng hợp: chọn một trong hai bài
 
-**Đề chiếu cho học viên:**
+Viết chương trình C# Console, dùng dữ liệu cố định, không cần menu hoặc nhập bàn phím. Mỗi bài là một project riêng; không dùng LINQ. Phần này chỉ có đề bài, kết quả mẫu và gợi ý, không có mã lời giải.
+
+#### Bài 1 — Kiểm tra túi vật phẩm
+
+**Kiến thức:** List, Dictionary, HashSet, vòng lặp và điều kiện. **Thời gian gợi ý:** 10–12 phút.
+
+**Dữ liệu ban đầu — đặt trong Main:**
 
 ```csharp
-string[] items = { "ammo", "shield", "ammo", "potion", "shield", "ammo" };
+List<string> bag = new List<string> { "ammo", "shield", "ammo", "potion" };
 ```
 
-1. Dùng Dictionary đếm số lượng từng mã.
-2. In ammo, shield, potion theo đúng thứ tự này.
-3. Dùng TryGetValue tra laser; nếu thiếu, in `Khong co laser`.
-4. Nếu xong sớm, dùng HashSet đếm số loại khác nhau.
+**Yêu cầu:**
 
-**Kết quả chuẩn:**
+1. Thêm một `shield` vào cuối túi, sau đó xóa một `potion` theo giá trị.
+2. In các vật phẩm còn lại theo thứ tự trong List và tổng số món.
+3. Từ List sau khi thay đổi, dùng Dictionary đếm số lượng từng mã. In số lượng `ammo`, `shield`, `potion` theo thứ tự này; mã không còn trong túi thì in 0.
+4. Dùng HashSet chứa các mã trong túi sau khi thay đổi, rồi in số loại vật phẩm khác nhau.
+5. Kiểm tra trong túi có `laser` hay không; nếu không có, in `Khong co laser`.
+
+**Kết quả mong đợi:**
 
 ```text
-ammo: 3
+Tui: ammo, shield, ammo, shield
+So mon: 4
+ammo: 2
 shield: 2
-potion: 1
+potion: 0
+So loai: 2
 Khong co laser
 ```
 
-Phần thêm: **3 loại**.
+**Gợi ý:**
 
-**Tổ chức:** 2 phút giải thích đề, 7 phút tự làm, 3 phút chữa. Cho học viên cần hỗ trợ xem lại khung if/else của demo đếm; không chiếu đáp án từ đầu.
+- Hoàn thành thao tác thêm/xóa trước khi bắt đầu thống kê để chỉ cần đếm một lần.
+- Phân biệt xóa theo giá trị với xóa theo chỉ số; chọn hàm phù hợp để xóa potion.
+- Khi duyệt túi, tự hỏi mã hiện tại đã có trong Dictionary chưa: nếu có thì tăng số lượng, nếu chưa thì bắt đầu từ 1.
+- Dùng một danh sách hoặc mảng mã riêng để quyết định thứ tự in. Khi tra mã có thể vắng mặt, nhớ cách lấy giá trị an toàn.
+- HashSet chỉ giữ mỗi mã một lần; phân biệt số món của túi với số loại trong tập hợp.
+- Có thể dùng foreach hoặc string.Join để in dòng túi đồ; không cần sắp xếp lại List.
 
-**Đáp án dành cho người dạy — chương trình đầy đủ:**
+**Tự kiểm tra:**
 
-```csharp
-using System;
-using System.Collections.Generic;
+- Trong List ban đầu, đổi `potion` thành `ammo`: chương trình vẫn chạy khi không có potion để xóa; sau các thao tác, ammo có 3, shield có 2, số món là 5 và số loại là 2.
+- Giải thích vì sao hai lần xuất hiện của ammo làm số món tăng nhưng chỉ đóng góp một loại.
 
-class Program
-{
-    static void Main()
-    {
-        string[] items =
-        {
-            "ammo", "shield", "ammo", "potion", "shield", "ammo"
-        };
+#### Bài 2 — Hàng chờ vào trận
 
-        Dictionary<string, int> counts = new Dictionary<string, int>();
-        HashSet<string> uniqueItems = new HashSet<string>();
+**Kiến thức:** Queue, Stack, enum, vòng lặp và điều kiện. **Thời gian gợi ý:** 10–12 phút.
 
-        foreach (string item in items)
-        {
-            if (counts.ContainsKey(item))
-            {
-                counts[item]++;
-            }
-            else
-            {
-                counts.Add(item, 1);
-            }
+**Bối cảnh:** Ba người An, Binh, Chi đến theo thứ tự đó. Hệ thống phục vụ hai người đầu và lưu tên người đã phục vụ vào lịch sử.
 
-            uniqueItems.Add(item);
-        }
+**Yêu cầu:**
 
-        string[] displayOrder = { "ammo", "shield", "potion" };
-        foreach (string code in displayOrder)
-        {
-            counts.TryGetValue(code, out int quantity);
-            Console.WriteLine($"{code}: {quantity}");
-        }
+1. Khai báo enum `MatchState` gồm `Waiting` và `Playing`, đặt ngoài Main. Trạng thái ban đầu là Waiting.
+2. Tạo Queue chứa An, Binh, Chi theo đúng thứ tự; tạo Stack rỗng để lưu lịch sử phục vụ. In trạng thái và số người chờ ban đầu.
+3. Dùng vòng lặp phục vụ tối đa hai người. Mỗi lượt lấy người đầu Queue, in tên và đưa tên đó vào Stack. Dừng nếu Queue hết người.
+4. Nếu đã phục vụ ít nhất một người thì đổi trạng thái thành Playing; nếu chưa có ai thì giữ Waiting. In trạng thái và số người chờ còn lại.
+5. Xem người tiếp theo trong Queue và người được phục vụ gần nhất trong Stack, **không xóa họ khỏi các collection**. Nếu collection tương ứng rỗng, in `Hang cho rong` hoặc `Chua phuc vu ai`.
+6. In số mục lịch sử để xác nhận thao tác xem không xóa dữ liệu.
 
-        if (counts.TryGetValue("laser", out int laserQuantity))
-        {
-            Console.WriteLine($"laser: {laserQuantity}");
-        }
-        else
-        {
-            Console.WriteLine("Khong co laser");
-        }
+**Kết quả mong đợi với ba người ban đầu:**
 
-        Console.WriteLine($"So loai: {uniqueItems.Count}");
-    }
-}
+```text
+Trang thai ban dau: Waiting
+So nguoi cho ban dau: 3
+Phuc vu: An
+Phuc vu: Binh
+Trang thai: Playing
+Con cho: 1
+Tiep theo: Chi
+Gan nhat: Binh
+So muc lich su: 2
 ```
 
-Giải thích khi chữa:
+**Gợi ý:**
 
-- Dùng một mảng riêng để quyết định thứ tự in; không dựa vào thứ tự duyệt Dictionary.
-- Trong vòng in, TryGetValue giúp in 0 nếu mã không có. Đây là chủ ý cho số lượng, không có nghĩa lúc nào cũng nên bỏ qua bool trả về.
-- Dictionary đã có các khóa duy nhất, nên cũng có thể lấy số loại bằng `counts.Count`. HashSet ở đây để luyện cách dùng cấu trúc thứ hai; bài thực tế không bắt buộc lưu cả hai.
+- Queue quyết định ai được phục vụ trước; Stack giúp xem ai được phục vụ gần nhất.
+- Phân biệt hàm lấy rồi xóa với hàm chỉ xem. Trước khi lấy hoặc xem, kiểm tra collection có phần tử hay không.
+- Vòng lặp phải có cả giới hạn hai lượt và điều kiện còn người chờ.
+- Dùng số lượt đã phục vụ hoặc số mục lịch sử để quyết định có chuyển trạng thái hay không.
+- In trực tiếp biến enum để quan sát tên trạng thái, không cần tự gán các số 0, 1 trong logic.
 
-**Tự kiểm tra thêm:** Mảng rỗng phải in ba số lượng 0, không có laser, số loại 0. Với ba ammo, số lượng ammo là 3 nhưng số loại là 1.
+**Tự kiểm tra:**
+
+- Chỉ có An trong hàng: phục vụ đúng một người, trạng thái Playing, hàng chờ rỗng và lịch sử có một mục.
+- Hàng ban đầu rỗng: không phục vụ ai, giữ Waiting; in hai thông báo rỗng tương ứng và số mục lịch sử bằng 0, không phát sinh lỗi.
+- Sau khi xem người tiếp theo và người gần nhất, số người chờ và số mục lịch sử không đổi.
+
+#### Cách chọn bài trong thời gian cuối buổi
+
+Hai bài là hai lựa chọn độc lập. Với khung 12 phút, chọn **một bài**: 1 phút đọc đề, 9 phút tự làm, 2 phút đối chiếu kết quả và giải thích cách chọn collection. Học viên hoàn thành sớm có thể bắt đầu bài còn lại; nếu muốn cả lớp làm đủ hai bài, dành khoảng 20–25 phút hoặc tiếp tục ở buổi sau.
+
+Người dạy hỗ trợ bằng câu hỏi gợi mở và gợi ý trong đề; không chiếu hoặc phát mã lời giải. Khi nhận xét, kiểm tra kết quả, thứ tự xử lý, điều kiện rỗng và việc chọn đúng collection.
 
 ### 87–90 — Phiếu cuối buổi và giao bài
 

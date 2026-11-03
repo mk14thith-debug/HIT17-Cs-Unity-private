@@ -1151,39 +1151,102 @@ Sau region: 15
 
 ---
 
-## 11. Thực hành cuối buổi — Đếm vật phẩm
+## 11. Thực hành cuối buổi — Hai bài tổng hợp đơn giản
 
-Cho dữ liệu:
+Viết chương trình C# Console, dùng dữ liệu cố định, không cần menu hoặc nhập bàn phím. Mỗi bài là một project riêng; không dùng LINQ. Phần này chỉ có đề bài, kết quả mẫu và gợi ý, không có mã lời giải.
+
+#### Bài 1 — Kiểm tra túi vật phẩm
+
+**Kiến thức:** List, Dictionary, HashSet, vòng lặp và điều kiện. **Thời gian gợi ý:** 10–12 phút.
+
+**Dữ liệu ban đầu — đặt trong Main:**
 
 ```csharp
-string[] items =
-{
-    "ammo",
-    "shield",
-    "ammo",
-    "potion",
-    "shield",
-    "ammo"
-};
+List<string> bag = new List<string> { "ammo", "shield", "ammo", "potion" };
 ```
 
-### Yêu cầu
+**Yêu cầu:**
 
-1. Dùng Dictionary đếm số lượng từng loại.
-2. In số lượng của `ammo`, `shield`, `potion` theo thứ tự này.
-3. Dùng `TryGetValue` để tra mã `laser`.
-4. Nếu không có `laser`, in `Khong co laser`.
+1. Thêm một `shield` vào cuối túi, sau đó xóa một `potion` theo giá trị.
+2. In các vật phẩm còn lại theo thứ tự trong List và tổng số món.
+3. Từ List sau khi thay đổi, dùng Dictionary đếm số lượng từng mã. In số lượng `ammo`, `shield`, `potion` theo thứ tự này; mã không còn trong túi thì in 0.
+4. Dùng HashSet chứa các mã trong túi sau khi thay đổi, rồi in số loại vật phẩm khác nhau.
+5. Kiểm tra trong túi có `laser` hay không; nếu không có, in `Khong co laser`.
 
-### Kết quả mong đợi
+**Kết quả mong đợi:**
 
 ```text
-ammo: 3
+Tui: ammo, shield, ammo, shield
+So mon: 4
+ammo: 2
 shield: 2
-potion: 1
+potion: 0
+So loai: 2
 Khong co laser
 ```
 
-Nếu còn thời gian, dùng HashSet đếm số loại vật phẩm khác nhau. Kết quả là **3 loại**.
+**Gợi ý:**
+
+- Hoàn thành thao tác thêm/xóa trước khi bắt đầu thống kê để chỉ cần đếm một lần.
+- Phân biệt xóa theo giá trị với xóa theo chỉ số; chọn hàm phù hợp để xóa potion.
+- Khi duyệt túi, tự hỏi mã hiện tại đã có trong Dictionary chưa: nếu có thì tăng số lượng, nếu chưa thì bắt đầu từ 1.
+- Dùng một danh sách hoặc mảng mã riêng để quyết định thứ tự in. Khi tra mã có thể vắng mặt, nhớ cách lấy giá trị an toàn.
+- HashSet chỉ giữ mỗi mã một lần; phân biệt số món của túi với số loại trong tập hợp.
+- Có thể dùng foreach hoặc string.Join để in dòng túi đồ; không cần sắp xếp lại List.
+
+**Tự kiểm tra:**
+
+- Trong List ban đầu, đổi `potion` thành `ammo`: chương trình vẫn chạy khi không có potion để xóa; sau các thao tác, ammo có 3, shield có 2, số món là 5 và số loại là 2.
+- Giải thích vì sao hai lần xuất hiện của ammo làm số món tăng nhưng chỉ đóng góp một loại.
+
+#### Bài 2 — Hàng chờ vào trận
+
+**Kiến thức:** Queue, Stack, enum, vòng lặp và điều kiện. **Thời gian gợi ý:** 10–12 phút.
+
+**Bối cảnh:** Ba người An, Binh, Chi đến theo thứ tự đó. Hệ thống phục vụ hai người đầu và lưu tên người đã phục vụ vào lịch sử.
+
+**Yêu cầu:**
+
+1. Khai báo enum `MatchState` gồm `Waiting` và `Playing`, đặt ngoài Main. Trạng thái ban đầu là Waiting.
+2. Tạo Queue chứa An, Binh, Chi theo đúng thứ tự; tạo Stack rỗng để lưu lịch sử phục vụ. In trạng thái và số người chờ ban đầu.
+3. Dùng vòng lặp phục vụ tối đa hai người. Mỗi lượt lấy người đầu Queue, in tên và đưa tên đó vào Stack. Dừng nếu Queue hết người.
+4. Nếu đã phục vụ ít nhất một người thì đổi trạng thái thành Playing; nếu chưa có ai thì giữ Waiting. In trạng thái và số người chờ còn lại.
+5. Xem người tiếp theo trong Queue và người được phục vụ gần nhất trong Stack, **không xóa họ khỏi các collection**. Nếu collection tương ứng rỗng, in `Hang cho rong` hoặc `Chua phuc vu ai`.
+6. In số mục lịch sử để xác nhận thao tác xem không xóa dữ liệu.
+
+**Kết quả mong đợi với ba người ban đầu:**
+
+```text
+Trang thai ban dau: Waiting
+So nguoi cho ban dau: 3
+Phuc vu: An
+Phuc vu: Binh
+Trang thai: Playing
+Con cho: 1
+Tiep theo: Chi
+Gan nhat: Binh
+So muc lich su: 2
+```
+
+**Gợi ý:**
+
+- Queue quyết định ai được phục vụ trước; Stack giúp xem ai được phục vụ gần nhất.
+- Phân biệt hàm lấy rồi xóa với hàm chỉ xem. Trước khi lấy hoặc xem, kiểm tra collection có phần tử hay không.
+- Vòng lặp phải có cả giới hạn hai lượt và điều kiện còn người chờ.
+- Dùng số lượt đã phục vụ hoặc số mục lịch sử để quyết định có chuyển trạng thái hay không.
+- In trực tiếp biến enum để quan sát tên trạng thái, không cần tự gán các số 0, 1 trong logic.
+
+**Tự kiểm tra:**
+
+- Chỉ có An trong hàng: phục vụ đúng một người, trạng thái Playing, hàng chờ rỗng và lịch sử có một mục.
+- Hàng ban đầu rỗng: không phục vụ ai, giữ Waiting; in hai thông báo rỗng tương ứng và số mục lịch sử bằng 0, không phát sinh lỗi.
+- Sau khi xem người tiếp theo và người gần nhất, số người chờ và số mục lịch sử không đổi.
+
+#### Cách chọn bài trong thời gian cuối buổi
+
+Hai bài là hai lựa chọn độc lập. Với khung 12 phút, chọn **một bài**: 1 phút đọc đề, 9 phút tự làm, 2 phút đối chiếu kết quả và giải thích cách chọn collection. Học viên hoàn thành sớm có thể bắt đầu bài còn lại; nếu muốn cả lớp làm đủ hai bài, dành khoảng 20–25 phút hoặc tiếp tục ở buổi sau.
+
+Người dạy hỗ trợ bằng câu hỏi gợi mở và gợi ý trong đề; không chiếu hoặc phát mã lời giải. Khi nhận xét, kiểm tra kết quả, thứ tự xử lý, điều kiện rỗng và việc chọn đúng collection.
 
 ---
 
