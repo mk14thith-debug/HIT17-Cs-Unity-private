@@ -164,119 +164,270 @@ List<string> players = new List<string>();
 - `List<int>`: danh sách số nguyên.
 - `List<string>`: danh sách chuỗi.
 
-### 3.2. Khởi tạo và thêm phần tử
+### 3.2. Ví dụ các thao tác và kết quả
+
+Các ví dụ dưới đây **chạy độc lập**, mỗi đoạn đặt trong `Main` của một project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép nguyên các đoạn vào cùng một Main vì có khai báo trùng tên biến.
+
+`string.Join(", ", items)` dùng để ghép các phần tử thành một dòng dễ quan sát. Hàm này thuộc `string`, không phải hàm của List. Có thể thay bằng foreach để in từng phần tử.
+
+**Nhịp giảng:** Ưu tiên Add, truy cập/cập nhật, Count, Contains, Remove, RemoveAt và duyệt danh sách. Find chỉ giới thiệu; Insert, AddRange, IndexOf, Sort/Reverse và Clear dùng làm ví dụ mở rộng hoặc tự học, không yêu cầu chạy hết trong 18–20 phút.
+
+#### Ví dụ 1 — Add — thêm vào cuối danh sách
 
 ```csharp
 List<string> items = new List<string>();
-
-items.Add("Ammo");
-items.Add("Shield");
-items.Add("Ammo");
+items.Add("ammo");
+items.Add("shield");
+items.Add("ammo");
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
 ```
 
-List cho phép phần tử trùng nhau.
+**Kết quả:**
 
-Có thể khởi tạo sẵn dữ liệu:
-
-```csharp
-List<int> damages = new List<int> { 10, 20, 15 };
+```text
+ammo, shield, ammo
+3
 ```
 
-### 3.3. Truy cập và cập nhật
+Add không trả về giá trị (void). List giữ thứ tự thêm và cho phép phần tử trùng nhau.
 
-List dùng chỉ số bắt đầu từ 0, tương tự mảng.
+#### Ví dụ 2 — Truy cập, cập nhật và Count
 
 ```csharp
-Console.WriteLine(items[0]); // Ammo
-
-items[1] = "Potion";
-
-Console.WriteLine(items[1]); // Potion
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+Console.WriteLine(items[0]);
+items[1] = "potion";
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
 ```
 
-### 3.4. Count — số phần tử hiện tại
+**Kết quả:**
 
-```csharp
-Console.WriteLine(items.Count); // 3
+```text
+ammo
+ammo, potion, ammo
+3
 ```
 
-**Ghi nhớ:**
+Chỉ số bắt đầu từ 0. Gán vào chỉ số đã có thay phần tử, không thêm phần tử mới. Mảng dùng Length; List dùng Count. Count là thuộc tính, không phải hàm; không viết Count(). Chỉ số hợp lệ từ 0 đến Count - 1.
 
-- Mảng dùng `Length`.
-- List dùng `Count`.
-
-Chỉ số hợp lệ của List từ `0` đến `Count - 1`.
-
-### 3.5. Duyệt danh sách
-
-Dùng `for` khi cần chỉ số:
+#### Ví dụ 3 — Contains — kiểm tra tồn tại
 
 ```csharp
+List<string> items = new List<string> { "ammo", "shield" };
+Console.WriteLine(items.Contains("ammo"));
+Console.WriteLine(items.Contains("laser"));
+Console.WriteLine(items.Contains("Ammo"));
+```
+
+**Kết quả:**
+
+```text
+True
+False
+False
+```
+
+Contains trả bool và không sửa danh sách. So sánh chuỗi mặc định trong ví dụ có phân biệt chữ hoa/thường.
+
+#### Ví dụ 4 — Remove — xóa theo giá trị
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+bool removed = items.Remove("ammo");
+Console.WriteLine(removed);
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Remove("laser"));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+True
+shield, ammo
+False
+2
+```
+
+Remove chỉ xóa lần xuất hiện đầu tiên; trả true nếu xóa được, false nếu không tìm thấy. Xóa mã không có không làm danh sách thay đổi.
+
+#### Ví dụ 5 — RemoveAt — xóa theo chỉ số
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "potion" };
+items.RemoveAt(1);
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items[1]);
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo, potion
+potion
+2
+```
+
+RemoveAt trả void. Sau khi xóa shield tại chỉ số 1, potion dịch từ chỉ số 2 về 1. Chỉ số không hợp lệ gây lỗi; cần kiểm tra trước nếu chưa chắc danh sách có phần tử ở vị trí đó.
+
+#### Ví dụ 6 — Duyệt bằng for và foreach
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield" };
 for (int i = 0; i < items.Count; i++)
 {
-    Console.WriteLine($"{i + 1}. {items[i]}");
+    Console.WriteLine($"{i}: {items[i]}");
 }
-```
-
-Dùng `foreach` khi chỉ cần đọc từng phần tử:
-
-```csharp
 foreach (string item in items)
 {
     Console.WriteLine(item);
 }
 ```
 
-### 3.6. Contains — kiểm tra tồn tại
+**Kết quả:**
 
-```csharp
-if (items.Contains("Ammo"))
-{
-    Console.WriteLine("Co dan trong tui.");
-}
+```text
+0: ammo
+1: shield
+ammo
+shield
 ```
 
-Với chuỗi, cách gọi này phân biệt hoa/thường.
+for cho phép dùng chỉ số; foreach đọc lần lượt các phần tử. Không thêm/xóa phần tử của List khi foreach đang duyệt chính List đó.
 
-### 3.7. Xóa phần tử
-
-**Xóa theo giá trị:**
+#### Ví dụ 7 — Find — tìm phần tử đầu tiên thỏa điều kiện
 
 ```csharp
-bool removed = items.Remove("Ammo");
-
-Console.WriteLine(removed); // True nếu đã xóa được.
+List<int> scores = new List<int> { 40, 120, 150, 0 };
+int found = scores.Find(score => score > 100);
+int missing = scores.Find(score => score > 999);
+Console.WriteLine(found);
+Console.WriteLine(missing);
 ```
 
-`Remove` chỉ xóa **lần xuất hiện đầu tiên**. Nếu không có giá trị cần xóa, trả về `false`.
+**Kết quả:**
 
-**Xóa theo vị trí:**
+```text
+120
+0
+```
+
+Đọc score => score > 100 là nhận một điểm số và kiểm tra nó lớn hơn 100. Find lấy phần tử đầu tiên phù hợp, không lấy mọi phần tử. Khi không có, trả giá trị mặc định của kiểu phần tử; int là 0. Vì 0 cũng có thể là dữ liệu hợp lệ, chỉ nhìn kết quả 0 chưa đủ biết có tìm thấy hay không. Lambda sẽ học kỹ ở buổi 5.
+
+#### Ví dụ 8 — Insert — chèn tại vị trí chỉ định
 
 ```csharp
-items.RemoveAt(0);
+List<string> items = new List<string> { "ammo", "potion" };
+items.Insert(1, "shield");
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
 ```
 
-Cần bảo đảm chỉ số hợp lệ trước khi gọi `RemoveAt`.
+**Kết quả:**
 
-**Lưu ý:** Không thêm hoặc xóa phần tử của List trong lúc `foreach` đang duyệt chính List đó.
+```text
+ammo, shield, potion
+3
+```
 
-### 3.8. Find — giới thiệu
+Insert trả void, chèn phần tử và dịch các phần tử phía sau sang phải. Chỉ số chèn hợp lệ từ 0 đến Count, gồm cả Count để chèn cuối.
+
+#### Ví dụ 9 — AddRange — thêm nhiều phần tử vào cuối
 
 ```csharp
-List<int> scores = new List<int> { 40, 80, 120 };
-
-int result = scores.Find(score => score > 100);
-
-Console.WriteLine(result); // 120
+List<string> items = new List<string> { "ammo" };
+items.AddRange(new string[] { "shield", "potion" });
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
 ```
 
-Đọc `score => score > 100` là: “nhận một điểm số và kiểm tra nó lớn hơn 100”.
+**Kết quả:**
 
-`Find` trả về phần tử đầu tiên thỏa điều kiện. Nếu không có, nó trả về giá trị mặc định của kiểu phần tử; với `int` là 0.
+```text
+ammo, shield, potion
+3
+```
 
-Cú pháp `=>` ở đây là lambda, sẽ học kỹ ở Buổi 5. Buổi này chưa yêu cầu tự viết điều kiện tìm kiếm phức tạp.
+AddRange trả void. Có thể truyền một mảng hoặc collection phù hợp; ví dụ thêm hai phần tử theo thứ tự của mảng.
 
-**Thực hành nhanh:** Tạo List chứa ba tên người chơi, thêm một tên mới, xóa một tên rồi in danh sách còn lại.
+#### Ví dụ 10 — IndexOf — tìm chỉ số theo giá trị
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+Console.WriteLine(items.IndexOf("ammo"));
+Console.WriteLine(items.IndexOf("shield"));
+Console.WriteLine(items.IndexOf("laser"));
+```
+
+**Kết quả:**
+
+```text
+0
+1
+-1
+```
+
+IndexOf trả chỉ số của lần xuất hiện đầu tiên hoặc -1 khi không thấy. Không dùng kết quả -1 làm chỉ số để đọc hay xóa phần tử.
+
+#### Ví dụ 11 — Sort và Reverse — sắp xếp và đảo thứ tự
+
+```csharp
+List<int> scores = new List<int> { 30, 10, 20 };
+scores.Sort();
+Console.WriteLine(string.Join(", ", scores));
+scores.Reverse();
+Console.WriteLine(string.Join(", ", scores));
+```
+
+**Kết quả:**
+
+```text
+10, 20, 30
+30, 20, 10
+```
+
+Sort và Reverse đều trả void và sửa trực tiếp List. Sort() với int sắp tăng dần. Reverse() chỉ đảo thứ tự hiện tại; nó không tự sắp xếp giảm dần nếu trước đó danh sách chưa được sắp tăng dần.
+
+#### Ví dụ 12 — Clear — xóa toàn bộ phần tử
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield" };
+items.Clear();
+Console.WriteLine(items.Count);
+Console.WriteLine(items.Contains("ammo"));
+items.Add("potion");
+Console.WriteLine(items[0]);
+```
+
+**Kết quả:**
+
+```text
+0
+False
+potion
+```
+
+Clear trả void và làm Count bằng 0. List vẫn tồn tại, có thể thêm phần tử trở lại; không đọc items[0] ngay sau Clear khi chưa thêm phần tử.
+
+#### Bảng nhắc nhanh về giá trị trả về
+
+| Thành viên | Giá trị trả về | Có thay đổi List không? |
+| --- | --- | --- |
+| Add, AddRange, Insert | void | Có |
+| Remove | bool: có xóa được hay không | Có nếu tìm thấy |
+| RemoveAt, Clear | void | Có |
+| Contains | bool: có tồn tại hay không | Không |
+| IndexOf | int: chỉ số đầu tiên hoặc -1 | Không |
+| Find | Phần tử đầu tiên phù hợp hoặc giá trị mặc định | Không |
+| Sort, Reverse | void | Có |
+| Count (thuộc tính) | int: số phần tử | Không |
+
+Các hàm không tự in ra màn hình. Các dòng kết quả trong ví dụ xuất hiện do gọi Console.WriteLine; với hàm trả void, hãy gọi hàm trước rồi in trạng thái List sau đó.
+
+**Thực hành nhanh:** Tạo List gồm An, Bình, Chi; thêm Dũng, xóa Bình rồi in Count và các tên còn lại. Kết quả: 3 người, theo thứ tự An, Chi, Dũng.
 
 ---
 

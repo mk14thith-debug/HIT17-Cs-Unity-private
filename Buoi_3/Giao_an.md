@@ -1,0 +1,809 @@
+# Giáo án buổi 3 — Chọn cách lưu dữ liệu trong C#
+
+[← Lộ trình](../README.md) · [Lý thuyết](Ly_thuyet.md) · [Bài tập về nhà](BTVN.md)
+
+## 1. Cách dùng giáo án
+
+Giáo án dành cho lớp mới học xong biến, điều kiện, vòng lặp, mảng và hàm. Thời lượng đề xuất là **90 phút**, chưa tính giờ nghỉ. Các đoạn “Lời dẫn” có thể dùng trực tiếp khi giảng; đáp án dành cho người dạy, nên cho học viên dự đoán trước khi chiếu.
+
+**Câu chuyện xuyên suốt:** Viết chương trình Console quản lý dữ liệu cho một game: vật phẩm nhặt được, số lượng trong kho, hàng chờ người chơi và trạng thái trận đấu.
+
+**Đích đến:** Học viên chọn được cấu trúc dữ liệu theo nhu cầu và thực hiện được thao tác cơ bản. Ưu tiên List, Dictionary và enum; những phần còn lại bắt đầu bằng một ví dụ nhỏ.
+
+Sau buổi học, học viên cần:
+
+1. Thêm, đọc, sửa, xóa và duyệt một List.
+2. Đếm vật phẩm và tra cứu an toàn bằng Dictionary.
+3. Phân biệt thứ tự lấy dữ liệu của Stack và Queue; dùng HashSet để tránh trùng.
+4. Dùng enum đặt tên trạng thái; dự đoán được kết quả gán struct và class.
+5. Hiểu `var` vẫn có kiểu cố định; nhận biết `object`, `dynamic` và `#region`.
+
+**Chuẩn bị:** Một project C# Console chạy được. Giữ cấu trúc `Program.Main` như tài liệu lớp. Không cần mở Unity.
+
+Với các đoạn ghi “đặt trong Main”, dùng khung sau; mỗi demo chạy riêng để tránh khai báo trùng tên biến:
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        // Đặt đoạn demo ở đây.
+    }
+}
+```
+
+## 2. Kế hoạch 90 phút
+
+| Mốc | Phút | Nội dung | Dấu hiệu học viên hiểu |
+| --- | ---: | --- | --- |
+| 00–05 | 5 | Ôn mảng, nêu bài toán | Nhớ chỉ số bắt đầu từ 0, độ dài mảng cố định |
+| 05–12 | 7 | var, object, dynamic | Biết var không tự đổi kiểu |
+| 12–30 | 18 | List và bài tập nhanh | Thêm, xóa, duyệt đúng |
+| 30–48 | 18 | Dictionary và đếm vật phẩm | Biết khóa duy nhất, tra mã không có an toàn |
+| 48–60 | 12 | Stack, Queue, HashSet | Chọn đúng cấu trúc qua tình huống |
+| 60–66 | 6 | Enum | Thay mã số bằng tên trạng thái |
+| 66–75 | 9 | Struct/class và #region | Dự đoán được hành vi sao chép |
+| 75–87 | 12 | Thực hành tổng hợp | Đếm đúng và xử lý mã chưa tồn tại |
+| 87–90 | 3 | Kiểm tra cuối buổi, giao bài | Giải thích được lý do chọn collection |
+| **Tổng** | **90** | | |
+
+Nhịp giảng mỗi phần: **nêu nhu cầu → cho dự đoán → chạy ví dụ → học viên đổi một chi tiết → chốt một câu**. Khi học viên bí, yêu cầu viết dữ liệu hiện tại ra giấy trước khi sửa cú pháp.
+
+## 3. Kịch bản giảng trực tiếp
+
+### 00–05 — Từ mảng đến collection
+
+**Lời dẫn:** “Buổi trước ta đã lưu ba điểm số bằng mảng. Bây giờ nhân vật liên tục nhặt thêm đồ. Mình cần một cách lưu cho phép thêm và xóa thuận tiện.”
+
+Viết:
+
+```csharp
+string[] items = new string[3];
+```
+
+Hỏi lớp:
+
+- Mảng này có bao nhiêu ô? **3.**
+- Chỉ số hợp lệ là gì? **0, 1, 2.**
+- Gán `items[3] = "ammo"` có làm mảng dài ra không? **Không, truy cập vượt phạm vi.**
+
+**Chốt:** Mảng có độ dài cố định sau khi tạo. Collection cung cấp nhiều cách quản lý nhóm dữ liệu; ta chọn theo thao tác cần làm.
+
+### 05–12 — var, object, dynamic: hiểu vừa đủ để đọc code
+
+**Lời dẫn:** “Trước khi dùng danh sách, mình làm rõ ba cách khai báo các em sẽ gặp. Câu hỏi là: kiểu của biến được xác định thế nào, và lỗi được phát hiện lúc nào?”
+
+**Demo A — đặt trong Main:**
+
+```csharp
+var score = 100;
+score = 200;
+Console.WriteLine(score); // 200
+
+// score = "HIT"; // Bỏ chú thích sẽ lỗi biên dịch: score có kiểu int.
+```
+
+Hỏi: “Máy suy ra `score` là kiểu gì?” **int, từ giá trị 100.**
+
+**Chốt:** `var` nhờ trình biên dịch suy ra kiểu từ giá trị khởi tạo. Kiểu đó vẫn cố định. Không viết được `var score;`.
+
+**Demo B — đặt trong Main:**
+
+```csharp
+object data = 100;
+int number = (int)data;
+Console.WriteLine(number + 1); // 101
+
+data = "HIT";
+Console.WriteLine(data); // HIT
+```
+
+Giải thích: Biến `object` có thể chứa dữ liệu thuộc nhiều kiểu; muốn dùng như một kiểu cụ thể phải xử lý kiểu phù hợp. Gán int vào object là boxing; lấy lại đúng int là unboxing. Chỉ giới thiệu tên, chưa đi sâu hiệu năng.
+
+**Demo C — đặt trong Main:**
+
+```csharp
+dynamic value = "HIT";
+Console.WriteLine(value.Length); // 3
+value = 100;
+// Console.WriteLine(value.Length); // Lỗi lúc chạy nếu thực hiện dòng này.
+```
+
+**Chốt:** `dynamic` chuyển một số kiểm tra thao tác sang lúc chạy. Trong bài hôm nay dùng kiểu cụ thể hoặc `var` khi kiểu đã rõ.
+
+**Câu kiểm tra:** “Đổi `int score = 100` thành `var score = 100` có khiến biến chứa được chuỗi không?” **Không.**
+
+### 12–30 — List: danh sách có thể thêm, xóa
+
+**Lời dẫn:** “Hãy hình dung túi đồ là một danh sách các lượt nhặt. Nhặt hai viên đạn thì danh sách có thể chứa hai lần ammo.”
+
+Giải thích `List<string>`: List là loại danh sách; `string` cho biết kiểu của mỗi phần tử. Chưa cần mở rộng lý thuyết generic.
+
+**Demo — đặt trong Main, chạy lần lượt từng đoạn:**
+
+```csharp
+List<string> bag = new List<string>();
+bag.Add("ammo");
+bag.Add("shield");
+bag.Add("ammo");
+
+Console.WriteLine(bag.Count); // 3
+Console.WriteLine(bag[0]);    // ammo
+bag[1] = "potion";
+
+bool removed = bag.Remove("ammo");
+Console.WriteLine(removed);  // True
+
+foreach (string item in bag)
+{
+    Console.WriteLine(item); // potion, rồi ammo trên hai dòng
+}
+```
+
+Vẽ trạng thái lên bảng:
+
+```text
+Sau ba lần Add:    [ammo] [shield] [ammo]
+Chỉ số:              0       1       2
+Sau bag[1] = ...:  [ammo] [potion] [ammo]
+Sau Remove:        [potion] [ammo]
+Chỉ số mới:            0       1
+```
+
+Nhấn mạnh chỉ số thay đổi sau khi xóa. `Remove("ammo")` xóa **lần xuất hiện đầu tiên**, trả bool cho biết có xóa được không.
+
+| Cần làm | Cú pháp |
+| --- | --- |
+| Thêm cuối | `bag.Add("ammo")` |
+| Đếm phần tử | `bag.Count` |
+| Kiểm tra tồn tại | `bag.Contains("ammo")` |
+| Xóa theo giá trị | `bag.Remove("ammo")` |
+| Xóa theo chỉ số | `bag.RemoveAt(0)` |
+
+`RemoveAt` cần chỉ số hợp lệ. List rỗng không có phần tử ở chỉ số 0. Mảng dùng `Length`; List dùng `Count`.
+
+#### Ví dụ cụ thể để chọn khi giảng
+
+Các ví dụ dưới đây **chạy độc lập**, mỗi đoạn đặt trong `Main` của một project Console, có `using System;` và `using System.Collections.Generic;`. Không ghép nguyên các đoạn vào cùng một Main vì có khai báo trùng tên biến.
+
+`string.Join(", ", items)` dùng để ghép các phần tử thành một dòng dễ quan sát. Hàm này thuộc `string`, không phải hàm của List. Có thể thay bằng foreach để in từng phần tử.
+
+**Nhịp giảng:** Ưu tiên Add, truy cập/cập nhật, Count, Contains, Remove, RemoveAt và duyệt danh sách. Find chỉ giới thiệu; Insert, AddRange, IndexOf, Sort/Reverse và Clear dùng làm ví dụ mở rộng hoặc tự học, không yêu cầu chạy hết trong 18–20 phút.
+
+#### Ví dụ 1 — Add — thêm vào cuối danh sách
+
+```csharp
+List<string> items = new List<string>();
+items.Add("ammo");
+items.Add("shield");
+items.Add("ammo");
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo, shield, ammo
+3
+```
+
+Add không trả về giá trị (void). List giữ thứ tự thêm và cho phép phần tử trùng nhau.
+
+#### Ví dụ 2 — Truy cập, cập nhật và Count
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+Console.WriteLine(items[0]);
+items[1] = "potion";
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo
+ammo, potion, ammo
+3
+```
+
+Chỉ số bắt đầu từ 0. Gán vào chỉ số đã có thay phần tử, không thêm phần tử mới. Mảng dùng Length; List dùng Count. Count là thuộc tính, không phải hàm; không viết Count(). Chỉ số hợp lệ từ 0 đến Count - 1.
+
+#### Ví dụ 3 — Contains — kiểm tra tồn tại
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield" };
+Console.WriteLine(items.Contains("ammo"));
+Console.WriteLine(items.Contains("laser"));
+Console.WriteLine(items.Contains("Ammo"));
+```
+
+**Kết quả:**
+
+```text
+True
+False
+False
+```
+
+Contains trả bool và không sửa danh sách. So sánh chuỗi mặc định trong ví dụ có phân biệt chữ hoa/thường.
+
+#### Ví dụ 4 — Remove — xóa theo giá trị
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+bool removed = items.Remove("ammo");
+Console.WriteLine(removed);
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Remove("laser"));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+True
+shield, ammo
+False
+2
+```
+
+Remove chỉ xóa lần xuất hiện đầu tiên; trả true nếu xóa được, false nếu không tìm thấy. Xóa mã không có không làm danh sách thay đổi.
+
+#### Ví dụ 5 — RemoveAt — xóa theo chỉ số
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "potion" };
+items.RemoveAt(1);
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items[1]);
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo, potion
+potion
+2
+```
+
+RemoveAt trả void. Sau khi xóa shield tại chỉ số 1, potion dịch từ chỉ số 2 về 1. Chỉ số không hợp lệ gây lỗi; cần kiểm tra trước nếu chưa chắc danh sách có phần tử ở vị trí đó.
+
+#### Ví dụ 6 — Duyệt bằng for và foreach
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield" };
+for (int i = 0; i < items.Count; i++)
+{
+    Console.WriteLine($"{i}: {items[i]}");
+}
+foreach (string item in items)
+{
+    Console.WriteLine(item);
+}
+```
+
+**Kết quả:**
+
+```text
+0: ammo
+1: shield
+ammo
+shield
+```
+
+for cho phép dùng chỉ số; foreach đọc lần lượt các phần tử. Không thêm/xóa phần tử của List khi foreach đang duyệt chính List đó.
+
+#### Ví dụ 7 — Find — tìm phần tử đầu tiên thỏa điều kiện
+
+```csharp
+List<int> scores = new List<int> { 40, 120, 150, 0 };
+int found = scores.Find(score => score > 100);
+int missing = scores.Find(score => score > 999);
+Console.WriteLine(found);
+Console.WriteLine(missing);
+```
+
+**Kết quả:**
+
+```text
+120
+0
+```
+
+Đọc score => score > 100 là nhận một điểm số và kiểm tra nó lớn hơn 100. Find lấy phần tử đầu tiên phù hợp, không lấy mọi phần tử. Khi không có, trả giá trị mặc định của kiểu phần tử; int là 0. Vì 0 cũng có thể là dữ liệu hợp lệ, chỉ nhìn kết quả 0 chưa đủ biết có tìm thấy hay không. Lambda sẽ học kỹ ở buổi 5.
+
+#### Ví dụ 8 — Insert — chèn tại vị trí chỉ định
+
+```csharp
+List<string> items = new List<string> { "ammo", "potion" };
+items.Insert(1, "shield");
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo, shield, potion
+3
+```
+
+Insert trả void, chèn phần tử và dịch các phần tử phía sau sang phải. Chỉ số chèn hợp lệ từ 0 đến Count, gồm cả Count để chèn cuối.
+
+#### Ví dụ 9 — AddRange — thêm nhiều phần tử vào cuối
+
+```csharp
+List<string> items = new List<string> { "ammo" };
+items.AddRange(new string[] { "shield", "potion" });
+Console.WriteLine(string.Join(", ", items));
+Console.WriteLine(items.Count);
+```
+
+**Kết quả:**
+
+```text
+ammo, shield, potion
+3
+```
+
+AddRange trả void. Có thể truyền một mảng hoặc collection phù hợp; ví dụ thêm hai phần tử theo thứ tự của mảng.
+
+#### Ví dụ 10 — IndexOf — tìm chỉ số theo giá trị
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield", "ammo" };
+Console.WriteLine(items.IndexOf("ammo"));
+Console.WriteLine(items.IndexOf("shield"));
+Console.WriteLine(items.IndexOf("laser"));
+```
+
+**Kết quả:**
+
+```text
+0
+1
+-1
+```
+
+IndexOf trả chỉ số của lần xuất hiện đầu tiên hoặc -1 khi không thấy. Không dùng kết quả -1 làm chỉ số để đọc hay xóa phần tử.
+
+#### Ví dụ 11 — Sort và Reverse — sắp xếp và đảo thứ tự
+
+```csharp
+List<int> scores = new List<int> { 30, 10, 20 };
+scores.Sort();
+Console.WriteLine(string.Join(", ", scores));
+scores.Reverse();
+Console.WriteLine(string.Join(", ", scores));
+```
+
+**Kết quả:**
+
+```text
+10, 20, 30
+30, 20, 10
+```
+
+Sort và Reverse đều trả void và sửa trực tiếp List. Sort() với int sắp tăng dần. Reverse() chỉ đảo thứ tự hiện tại; nó không tự sắp xếp giảm dần nếu trước đó danh sách chưa được sắp tăng dần.
+
+#### Ví dụ 12 — Clear — xóa toàn bộ phần tử
+
+```csharp
+List<string> items = new List<string> { "ammo", "shield" };
+items.Clear();
+Console.WriteLine(items.Count);
+Console.WriteLine(items.Contains("ammo"));
+items.Add("potion");
+Console.WriteLine(items[0]);
+```
+
+**Kết quả:**
+
+```text
+0
+False
+potion
+```
+
+Clear trả void và làm Count bằng 0. List vẫn tồn tại, có thể thêm phần tử trở lại; không đọc items[0] ngay sau Clear khi chưa thêm phần tử.
+
+#### Bảng nhắc nhanh về giá trị trả về
+
+| Thành viên | Giá trị trả về | Có thay đổi List không? |
+| --- | --- | --- |
+| Add, AddRange, Insert | void | Có |
+| Remove | bool: có xóa được hay không | Có nếu tìm thấy |
+| RemoveAt, Clear | void | Có |
+| Contains | bool: có tồn tại hay không | Không |
+| IndexOf | int: chỉ số đầu tiên hoặc -1 | Không |
+| Find | Phần tử đầu tiên phù hợp hoặc giá trị mặc định | Không |
+| Sort, Reverse | void | Có |
+| Count (thuộc tính) | int: số phần tử | Không |
+
+Các hàm không tự in ra màn hình. Các dòng kết quả trong ví dụ xuất hiện do gọi Console.WriteLine; với hàm trả void, hãy gọi hàm trước rồi in trạng thái List sau đó.
+
+**Bài tại lớp — 4 phút:** Tạo `List<string>` gồm An, Bình, Chi. Thêm Dũng, xóa Bình, in số người và tên còn lại bằng foreach.
+
+**Kết quả:** 3 người, theo thứ tự An, Chi, Dũng.
+
+**Câu kiểm tra:** “Nếu danh sách có hai An, Remove một lần sẽ còn mấy An?” **Một.**
+
+**Lưu ý:** Không thêm/xóa List trong lúc foreach đang duyệt chính List đó. Nếu cần sửa danh sách, kết thúc lượt duyệt rồi thực hiện thao tác. `Find` chỉ giới thiệu thêm nếu lớp theo kịp; cú pháp lambda sẽ học ở buổi 5.
+
+### 30–48 — Dictionary: tìm dữ liệu bằng khóa
+
+**Lời dẫn:** “List cho biết từng lượt nhặt. Nhưng khi hỏi ‘mình có bao nhiêu ammo?’, ta muốn tra theo mã ammo. Dictionary lưu mỗi mã cùng số lượng tương ứng.”
+
+Vẽ:
+
+| Khóa | Giá trị |
+| --- | ---: |
+| ammo | 3 |
+| shield | 2 |
+| potion | 1 |
+
+**Demo A — đặt trong Main:**
+
+```csharp
+Dictionary<string, int> inventory = new Dictionary<string, int>();
+inventory.Add("ammo", 3);
+inventory.Add("shield", 2);
+
+inventory["ammo"] = 5;    // Cập nhật khóa đã có.
+inventory["potion"] = 1;  // Thêm khóa chưa có.
+
+Console.WriteLine(inventory["ammo"]); // 5
+
+if (inventory.TryGetValue("laser", out int quantity))
+{
+    Console.WriteLine(quantity);
+}
+else
+{
+    Console.WriteLine("Khong co laser");
+}
+```
+
+Giải thích `TryGetValue`: “Thử tìm mã này. Nếu có, trả true và đưa số lượng vào quantity; nếu không, đi vào else.” Với int, quantity nhận 0 khi tìm không thấy. `out` sẽ học kỹ ở buổi 4.
+
+**Ba điểm phải chốt:**
+
+1. Mỗi khóa chỉ xuất hiện một lần; nhiều khóa có thể có cùng giá trị.
+2. `Add` với khóa đã tồn tại gây lỗi; `inventory[key] = value` thêm hoặc cập nhật.
+3. Đọc `inventory["laser"]` khi không có khóa gây lỗi. Dùng TryGetValue hoặc kiểm tra ContainsKey.
+
+**Demo B — đếm từng lượt nhặt, đặt trong Main độc lập với demo A:**
+
+```csharp
+string[] drops = { "ammo", "shield", "ammo" };
+Dictionary<string, int> counts = new Dictionary<string, int>();
+
+foreach (string item in drops)
+{
+    if (counts.ContainsKey(item))
+    {
+        counts[item]++;
+    }
+    else
+    {
+        counts.Add(item, 1);
+    }
+}
+
+Console.WriteLine(counts["ammo"]);   // 2
+Console.WriteLine(counts["shield"]); // 1
+```
+
+Đi chậm qua từng vòng:
+
+| Lượt | item | Đã có khóa? | Sau xử lý |
+| --- | --- | --- | --- |
+| 1 | ammo | Chưa | ammo: 1 |
+| 2 | shield | Chưa | ammo: 1, shield: 1 |
+| 3 | ammo | Có | ammo: 2, shield: 1 |
+
+**Bài tại lớp — 4 phút:** Thêm potion và shield vào dữ liệu đầu vào rồi đếm lại. **Kết quả:** ammo 2, shield 2, potion 1.
+
+**Câu kiểm tra:** “`counts.Count` bằng 3 có nghĩa đã nhặt ba món không?” **Không, đó là ba khóa, tương ứng ba loại vật phẩm; tổng số lượt nhặt là 5.**
+
+### 48–60 — Stack, Queue, HashSet: ba nhu cầu khác nhau
+
+Trước khi viết code, dùng ba tình huống đời thường:
+
+- **Stack — chồng đĩa:** Đặt sau lấy trước. Dùng cho lịch sử thao tác.
+- **Queue — xếp hàng:** Đến trước ra trước. Dùng cho hàng chờ vào trận.
+- **HashSet — tập mã thành tựu:** Thêm lại mã đã có vẫn chỉ tính một lần.
+
+**Demo — đặt trong Main:**
+
+```csharp
+Stack<string> history = new Stack<string>();
+history.Push("Di chuyen");
+history.Push("Ban");
+Console.WriteLine(history.Peek()); // Ban; chưa xóa.
+Console.WriteLine(history.Pop());  // Ban; đã xóa.
+Console.WriteLine(history.Count);  // 1
+
+Queue<string> waiting = new Queue<string>();
+waiting.Enqueue("An");
+waiting.Enqueue("Binh");
+Console.WriteLine(waiting.Dequeue()); // An
+Console.WriteLine(waiting.Peek());    // Binh; chưa xóa.
+
+HashSet<string> achievements = new HashSet<string>();
+Console.WriteLine(achievements.Add("first_win")); // True
+Console.WriteLine(achievements.Add("first_win")); // False
+Console.WriteLine(achievements.Count);            // 1
+```
+
+**Nhắc ngay sau demo:** Pop, Dequeue và Peek gây lỗi khi rỗng. Kiểm tra `Count > 0` trước khi gọi. Stack chỉ lưu dữ liệu theo thứ tự; muốn undo thật sự phải viết thêm hành vi hoàn tác.
+
+HashSet có `Contains`, `Remove`; không truy cập bằng `[0]` và không dựa vào thứ tự duyệt. Với chuỗi trong các ví dụ này, mặc định có phân biệt hoa/thường.
+
+**Hỏi nhanh cả lớp:**
+
+| Tình huống | Đáp án |
+| --- | --- |
+| Lấy thao tác gần nhất để hoàn tác | Stack |
+| Gọi người đến sớm nhất | Queue |
+| Đếm mã thành tựu duy nhất | HashSet |
+| Lưu mọi lượt nhặt, gồm cả trùng | List |
+| Tra số lượng theo mã vật phẩm | Dictionary |
+
+### 60–66 — Enum: gọi trạng thái bằng tên
+
+**Lời dẫn:** “Nếu chỉ nhìn `state = 2`, người đọc chưa biết 2 là đang chơi hay tạm dừng. Mình đặt tên cho các lựa chọn bằng enum.”
+
+**Đặt ngoài Main, phía trên class Program:**
+
+```csharp
+enum GameState
+{
+    Menu,
+    Playing,
+    Paused,
+    GameOver
+}
+```
+
+**Đặt trong Main:**
+
+```csharp
+GameState state = GameState.Playing;
+
+if (state == GameState.Playing)
+{
+    Console.WriteLine("Dang choi");
+}
+
+state = GameState.Paused;
+Console.WriteLine(state); // Paused
+```
+
+**Bài nhanh:** Đổi trạng thái thành GameOver, dùng if hoặc switch để in “Ket thuc tran”.
+
+**Chốt:** Enum tạo một kiểu có các hằng được đặt tên, giúp code trạng thái dễ đọc. Việc chuyển trạng thái vẫn cần lập trình; enum không tự tạm dừng game.
+
+### 66–75 — Struct/class: gán xong thì dữ liệu có độc lập không?
+
+**Lời dẫn:** “Cùng viết `second = first`, nhưng có lúc ta sao chép giá trị, có lúc ta sao chép tham chiếu. Mình chạy hai ví dụ để nhìn thấy khác biệt.”
+
+**Demo đầy đủ — thay toàn bộ Program.cs bằng đoạn sau:**
+
+```csharp
+using System;
+
+struct GridPosition
+{
+    public int X;
+    public int Y;
+}
+
+class PlayerData
+{
+    public int Hp;
+}
+
+class Program
+{
+    static void Main()
+    {
+        GridPosition original = new GridPosition();
+        original.X = 2;
+        original.Y = 3;
+        GridPosition copy = original;
+        copy.X = 99;
+
+        Console.WriteLine($"Original: ({original.X}, {original.Y})");
+        Console.WriteLine($"Copy: ({copy.X}, {copy.Y})");
+
+        PlayerData first = new PlayerData();
+        first.Hp = 100;
+        PlayerData second = first;
+        second.Hp = 50;
+
+        Console.WriteLine($"First HP: {first.Hp}");
+        Console.WriteLine($"Second HP: {second.Hp}");
+    }
+}
+```
+
+**Cho lớp dự đoán trước khi chạy. Kết quả:**
+
+```text
+Original: (2, 3)
+Copy: (99, 3)
+First HP: 50
+Second HP: 50
+```
+
+Vẽ lên bảng:
+
+```text
+Struct trong ví dụ:
+original -> giá trị (2, 3)
+copy     -> giá trị (99, 3)
+
+Class trong ví dụ:
+first  ----+
+           +----> cùng đối tượng PlayerData, Hp = 50
+second ----+
+```
+
+**Chốt:** Struct là kiểu giá trị, phép gán sao chép giá trị. Class là kiểu tham chiếu, phép gán sao chép tham chiếu. Không cần dùng quy tắc vị trí bộ nhớ để giải thích.
+
+Phạm vi ví dụ struct là hai field int. Nếu struct chứa field kiểu tham chiếu, bản sao vẫn có thể tham chiếu chung đối tượng ở field đó; phép gán không tự sao chép sâu mọi dữ liệu bên trong.
+
+**Hỏi thêm:** “Muốn hai PlayerData độc lập thì làm sao?” **Tạo hai đối tượng bằng hai lần new và gán dữ liệu cần thiết.** Constructor và thiết kế class sẽ học ở buổi 4. Field public ở đây phục vụ quan sát.
+
+**Giới thiệu #region trong 1 phút:** Bọc một phần code bằng `#region TenNhom` và `#endregion`, rồi thu gọn trong IDE. Nó giúp tổ chức hiển thị, không đổi cách chạy và không tạo phạm vi biến mới.
+
+### 75–87 — Thực hành tổng hợp: thống kê vật phẩm
+
+**Đề chiếu cho học viên:**
+
+```csharp
+string[] items = { "ammo", "shield", "ammo", "potion", "shield", "ammo" };
+```
+
+1. Dùng Dictionary đếm số lượng từng mã.
+2. In ammo, shield, potion theo đúng thứ tự này.
+3. Dùng TryGetValue tra laser; nếu thiếu, in `Khong co laser`.
+4. Nếu xong sớm, dùng HashSet đếm số loại khác nhau.
+
+**Kết quả chuẩn:**
+
+```text
+ammo: 3
+shield: 2
+potion: 1
+Khong co laser
+```
+
+Phần thêm: **3 loại**.
+
+**Tổ chức:** 2 phút giải thích đề, 7 phút tự làm, 3 phút chữa. Cho học viên cần hỗ trợ xem lại khung if/else của demo đếm; không chiếu đáp án từ đầu.
+
+**Đáp án dành cho người dạy — chương trình đầy đủ:**
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        string[] items =
+        {
+            "ammo", "shield", "ammo", "potion", "shield", "ammo"
+        };
+
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+        HashSet<string> uniqueItems = new HashSet<string>();
+
+        foreach (string item in items)
+        {
+            if (counts.ContainsKey(item))
+            {
+                counts[item]++;
+            }
+            else
+            {
+                counts.Add(item, 1);
+            }
+
+            uniqueItems.Add(item);
+        }
+
+        string[] displayOrder = { "ammo", "shield", "potion" };
+        foreach (string code in displayOrder)
+        {
+            counts.TryGetValue(code, out int quantity);
+            Console.WriteLine($"{code}: {quantity}");
+        }
+
+        if (counts.TryGetValue("laser", out int laserQuantity))
+        {
+            Console.WriteLine($"laser: {laserQuantity}");
+        }
+        else
+        {
+            Console.WriteLine("Khong co laser");
+        }
+
+        Console.WriteLine($"So loai: {uniqueItems.Count}");
+    }
+}
+```
+
+Giải thích khi chữa:
+
+- Dùng một mảng riêng để quyết định thứ tự in; không dựa vào thứ tự duyệt Dictionary.
+- Trong vòng in, TryGetValue giúp in 0 nếu mã không có. Đây là chủ ý cho số lượng, không có nghĩa lúc nào cũng nên bỏ qua bool trả về.
+- Dictionary đã có các khóa duy nhất, nên cũng có thể lấy số loại bằng `counts.Count`. HashSet ở đây để luyện cách dùng cấu trúc thứ hai; bài thực tế không bắt buộc lưu cả hai.
+
+**Tự kiểm tra thêm:** Mảng rỗng phải in ba số lượng 0, không có laser, số loại 0. Với ba ammo, số lượng ammo là 3 nhưng số loại là 1.
+
+### 87–90 — Phiếu cuối buổi và giao bài
+
+Yêu cầu học viên trả lời ngắn, chưa xem tài liệu:
+
+1. Muốn lưu tất cả lượt nhặt, kể cả trùng, dùng gì? **List.**
+2. Muốn tra số lượng theo mã, dùng gì? **Dictionary.**
+3. Stack lấy phần tử mới nhất hay cũ nhất? **Mới nhất.**
+4. Thêm một mã hai lần vào HashSet được mấy phần tử? **Một.**
+5. Gán class sang biến khác có tự tạo object mới không? **Không.**
+
+Giao [3 bài BTVN](BTVN.md) theo đúng đề hiện có:
+
+- **Bài 1 — Túi vật phẩm:** List lưu lượt nhặt, Dictionary lưu số lượng. Khi xóa phải cập nhật cả hai; số lượng về 0 thì xóa khóa.
+- **Bài 2 — Hàng chờ và lịch sử phục vụ:** Queue, Stack và enum; kiểm tra rỗng, đọc kỹ quy tắc sau CLOSE. LAST chỉ xem lịch sử, không xóa.
+- **Bài 3 — Thành tựu và vị trí:** HashSet đếm mã duy nhất; struct để quan sát sao chép, giải thích kết quả trong README.
+
+Mỗi bài là một Console project riêng, có `.csproj`, mã nguồn và README ngắn về cách chạy/kết quả tự kiểm tra. Không nộp `bin/`, `obj/`.
+
+## 4. Lỗi thường gặp và cách gợi mở
+
+| Dấu hiệu | Câu gợi ý hoặc cách sửa |
+| --- | --- |
+| Dùng `list.Length` | “Mảng dùng Length; List dùng thuộc tính nào?” → Count |
+| Viết `i <= list.Count` | “Nếu Count là 3, chỉ số cuối là mấy?” → 2; dùng `<` |
+| Nhầm Remove với RemoveAt | “Em đang chỉ tên món đồ hay vị trí của nó?” |
+| Cho rằng Remove xóa hết mã trùng | Cho chạy danh sách có hai ammo và quan sát |
+| Add Dictionary bị trùng khóa | Tách nhánh thêm mới và tăng số lượng |
+| Tra khóa không tồn tại bị lỗi | Dùng TryGetValue hoặc ContainsKey trước khi đọc |
+| Nhầm số loại với số lượt nhặt | Viết ba ammo ra giấy: 3 lượt, 1 loại |
+| Pop/Dequeue/Peek khi rỗng | Kiểm tra Count trước khi lấy/xem |
+| Truy cập HashSet bằng chỉ số | Nhắc HashSet là tập giá trị duy nhất, không có chỉ số như List |
+| Cho rằng var đổi kiểu được | Bật dòng gán chuỗi vào biến int đã suy ra, quan sát lỗi rồi bỏ dòng đó |
+| Đặt enum/struct/class trong Main | Chỉ lại khung file; đặt khai báo kiểu ngoài Main |
+| Cho rằng gán class tạo bản sao độc lập | Vẽ hai mũi tên cùng đến một object |
+
+## 5. Điều chỉnh thời lượng
+
+**Nếu chỉ có 60 phút:** Mở bài 3; var/object/dynamic 4; List 12; Dictionary 15; Stack/Queue/HashSet 7; enum 4; struct/class/#region 5; thực hành 8; chốt và giao bài 2. Dùng demo chuẩn bị sẵn, chuyển bài sửa code nhỏ sang tự học. Giữ việc tự viết đếm vật phẩm làm thực hành chính.
+
+**Nếu có 120 phút:** Giữ khung 90 phút, thêm 10 phút viết menu thêm/xóa List; 10 phút thực hành đồng bộ List với bộ đếm Dictionary; 10 phút kiểm tra chéo trường hợp rỗng, mã không có và dữ liệu trùng.
+
+**Nếu lớp chưa theo kịp:** Ưu tiên làm chắc List và Dictionary, cho chạy demo các phần còn lại và dùng 5 phút đầu buổi sau để kiểm tra lại. Chưa yêu cầu học viên tự viết lambda hay giải thích chi tiết boxing/unboxing.
+
+## 6. Bảng chốt để giữ trên màn hình
+
+| Nhu cầu | Chọn |
+| --- | --- |
+| Số ô cố định, truy cập bằng chỉ số | Mảng |
+| Danh sách thêm/xóa, giữ thứ tự và cho phép trùng | List |
+| Tra giá trị theo khóa duy nhất | Dictionary |
+| Vào sau, ra trước | Stack |
+| Vào trước, ra trước | Queue |
+| Giá trị duy nhất, kiểm tra trùng | HashSet |
+| Nhóm lựa chọn có tên, như trạng thái trận đấu | Enum |
+
+**Lời kết có thể dùng:** “Trước khi viết code, hãy hỏi mình muốn làm gì với dữ liệu: giữ mọi lượt, đếm theo mã, xếp hàng hay bỏ trùng. Nhu cầu đó sẽ giúp mình chọn cấu trúc phù hợp.”
