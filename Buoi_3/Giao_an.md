@@ -1416,7 +1416,7 @@ Yêu cầu học viên trả lời ngắn, chưa xem tài liệu:
 Giao [3 bài BTVN](BTVN.md) theo đúng đề hiện có:
 
 - **Bài 1 — Túi vật phẩm:** List lưu lượt nhặt, Dictionary lưu số lượng. Khi xóa phải cập nhật cả hai; số lượng về 0 thì xóa khóa.
-- **Bài 2 — Hàng chờ và lịch sử phục vụ:** Queue, Stack và enum; kiểm tra rỗng, đọc kỹ quy tắc sau CLOSE. LAST chỉ xem lịch sử, không xóa.
+- **Bài 2 — Phục vụ theo thứ tự đến.** Dùng Queue để lần lượt phục vụ và Stack để xem người được phục vụ gần nhất. Kiểm tra trường hợp không có người chờ.
 - **Bài 3 — Thành tựu và vị trí:** HashSet đếm mã duy nhất; struct để quan sát sao chép, giải thích kết quả trong README.
 
 Mỗi bài là một Console project riêng, có `.csproj`, mã nguồn và README ngắn về cách chạy/kết quả tự kiểm tra. Không nộp `bin/`, `obj/`.
