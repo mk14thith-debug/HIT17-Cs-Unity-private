@@ -317,6 +317,52 @@ Delegate là một kiểu dùng để lưu và gọi phương thức có chữ k
 | `Func` | `Func<int, int, int> add = (a, b) => a + b;` |
 | Lambda | `x => x * 2` hoặc `(a, b) => { return a + b; }` |
 
+### Ví dụ Console — Chọn phép tính bằng delegate
+
+Nếu bài chỉ cần cộng hai số, gọi `Cong(10, 3)` là đủ. Khi chương trình cần tính rồi in theo cùng một quy trình với nhiều phép tính, cho hàm `TinhVaIn` nhận phép tính từ bên gọi.
+
+```csharp
+using System;
+
+delegate int PhepTinh(int a, int b);
+
+class Program
+{
+    static int Cong(int a, int b)
+    {
+        return a + b;
+    }
+
+    static int Tru(int a, int b)
+    {
+        return a - b;
+    }
+
+    static void TinhVaIn(int a, int b, PhepTinh tinh)
+    {
+        int ketQua = tinh(a, b);
+        Console.WriteLine($"Kết quả: {ketQua}");
+    }
+
+    static void Main()
+    {
+        TinhVaIn(10, 3, Cong);
+        TinhVaIn(10, 3, Tru);
+    }
+}
+```
+
+**Kết quả**
+
+```text
+Kết quả: 13
+Kết quả: 7
+```
+
+**Đọc theo thứ tự chạy.** `PhepTinh` mô tả chữ ký nhận hai `int` và trả một `int`. Trong lời gọi đầu, tên `Cong` được truyền làm đối số cho tham số `tinh`. Đến `tinh(a, b)`, hàm `Cong` mới chạy. Ở lời gọi thứ hai, tham số `tinh` nhận phương thức `Tru` và cùng dòng đó thực hiện phép trừ. Có thể viết `tinh.Invoke(a, b)` để gọi delegate theo cách tương đương.
+
+**Thử ngay.** Thêm `Nhan(int a, int b)` rồi gọi `TinhVaIn(10, 3, Nhan)`. Kết quả là 30. Trong Tank Battle, công thức tính sát thương sau giáp có thể được truyền vào theo cách tương tự.
+
 **Ví dụ tình huống**
 
 Viết phép tính sát thương sau giáp theo hai cách, một phương thức có tên và một lambda. Gán lần lượt vào biến `rule` rồi gọi với cùng đối số.
@@ -390,6 +436,72 @@ Cho nhiều phần của game phản ứng với cùng một thay đổi. Class 
 | Hủy đăng ký | `source.ValueChanged -= HandleValue;` |
 
 Với `Action<int>`, phương thức `HandleValue` nhận một `int` và trả `void`.
+
+### Ví dụ Console — Ví tiền báo số dư mới
+
+Nếu bài chỉ cần in số dư một lần, `Main` có thể gọi `NapTien` rồi đọc `SoDu` để in. Event hữu ích khi nhiều phần cần phản ứng mỗi lần số dư thay đổi. Trong ví dụ này, màn hình và nhật ký đăng ký cùng một event. Ví cập nhật số dư rồi phát giá trị mới.
+
+```csharp
+using System;
+
+class ViTien
+{
+    public int SoDu { get; private set; }
+
+    public event Action<int>? SoDuThayDoi;
+
+    public void NapTien(int soTien)
+    {
+        if (soTien <= 0)
+        {
+            return;
+        }
+
+        SoDu += soTien;
+        SoDuThayDoi?.Invoke(SoDu);
+    }
+}
+
+class Program
+{
+    static void HienThiSoDu(int soDuMoi)
+    {
+        Console.WriteLine($"Màn hình hiển thị: {soDuMoi}");
+    }
+
+    static void GhiNhatKy(int soDuMoi)
+    {
+        Console.WriteLine($"Nhật ký ghi nhận số dư: {soDuMoi}");
+    }
+
+    static void Main()
+    {
+        ViTien vi = new ViTien();
+        vi.SoDuThayDoi += HienThiSoDu;
+        vi.SoDuThayDoi += GhiNhatKy;
+
+        vi.NapTien(100);
+
+        vi.SoDuThayDoi -= HienThiSoDu;
+        vi.NapTien(50);
+
+        Console.WriteLine($"Số dư cuối: {vi.SoDu}");
+    }
+}
+```
+
+**Kết quả**
+
+```text
+Màn hình hiển thị: 100
+Nhật ký ghi nhận số dư: 100
+Nhật ký ghi nhận số dư: 150
+Số dư cuối: 150
+```
+
+**Đọc theo thứ tự chạy.** Lần nạp đầu đưa số dư lên 100. Dòng `SoDuThayDoi?.Invoke(SoDu)` gọi ngay cả hai handler và truyền số 100 cho từng handler. Trước lần nạp thứ hai, màn hình hủy đăng ký. Số dư vẫn tăng lên 150 và chỉ nhật ký nhận thông báo. Nếu hủy cả hai, `?.` bỏ qua lời gọi vì lúc đó event chưa có handler nào.
+
+**Thử ngay.** Đưa dòng hủy đăng ký màn hình xuống sau lần nạp thứ hai. Chương trình in thêm `Màn hình hiển thị: 150`. Trong Tank Battle, `Health` có thể phát HP mới theo cùng cách để thanh máu và hiệu ứng cùng phản ứng.
 
 **Ví dụ tình huống**
 
